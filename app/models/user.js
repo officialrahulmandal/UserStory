@@ -10,4 +10,18 @@ var UserSchema = new Schema({
   password: { type: String, required: true, select: false}
 });
 
-module.exports = mongoose.model('user', UserSchema);
+UserSchema.pre('save', function(next) {
+
+  var user = this;
+
+  if(!user.isModified('password')) return next();
+
+  bcrypt.hash(user.password, null, null, function(err,hash) {
+    if(err) return next(err);
+
+    user.password = hash;
+    next();
+
+  });
+});
+module.exports = mongoose.model('User', UserSchema);
