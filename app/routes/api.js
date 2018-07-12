@@ -4,10 +4,22 @@ var config = require('../../config');
 
 var secretKey = config.secretKey;
 
+var jsonwebtoken = require('jsonwebtoken');
+
+function createToken(user) {
+  var token = jsonwebtoken.sign({
+    _id: user._id,
+    name: user.name,
+    username: user.username
+  }, secretKey, {
+    expiresIn: 604800
+  });
+  return token;
+}
+
 module.exports = function(app, express) {
 
   var api = express.Router();
-  var bcrypt = require('bcrypt-nodejs')
 
   api.post('/signup', function(req, res) {
 
@@ -40,6 +52,33 @@ module.exports = function(app, express) {
       res.json(users);
     });
   });
+
+  api.post('/login', function(req, res) {
+    User.findOne({
+      username: req.body.username
+    }).select('password').exec(function(err, user) {
+      if(err) throw err;
+      if(!user)  {
+        res.send({message: "User doesn't exist"});
+      } else if(user) {
+        var validPassword = user.comparePassword(req.body.password);
+
+        if(!validPassword) {
+          res.send({message: "Invalid Password"});
+        } else {
+          var token = createToken(user);
+
+          res.json({
+            sucess: true,
+            message: "Successfuly login!",
+            token: token
+          });
+        }
+      }
+    });
+  });
+
+
 
   return api
 }
