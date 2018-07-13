@@ -35,7 +35,7 @@ angular.module('authService', [])
   }
 })
 
-.factory('AuthToken', function($window)) {
+.factory('AuthToken', function($window) {
   var authTokenFactory = {};
 
   authTokenFactory.getToken = function() {
@@ -47,6 +47,26 @@ angular.module('authService', [])
             $window.localStorage.setItem('token', token);
         else
             $window.localStorage.removeItem('token');
-        
+
   }
+  return authTokenFactory;
+});
+
+.factory('AuthInterceptor', function($q, $location, AuthToken){
+    var interceptorFactory = {};
+
+    interceptorFactory.request = function(config) {
+      var token = AuthToken.getToken();
+        if(token) {
+          config.headers['x-access-token'] = token;
+        }
+
+    return config;
+});
+interceptoryFactory.responseError = function(response) {
+  if(response.status === 403)
+    $location.path('/login');
+  return $q.reject(response);
+
 }
+});
