@@ -1,6 +1,6 @@
 var User = require('../models/user');
 var config = require('../../config');
-var Story = require('../../config');
+var Story = require('../models/story');
 
 var secretKey = config.secretKey;
 var jsonwebtoken = require('jsonwebtoken');
